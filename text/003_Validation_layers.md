@@ -49,7 +49,7 @@ that we'll have closer look at the `InstanceCreateInfo` struct? Now is the time.
 
 ```rust
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let entry = ash::Entry::new()?;
+    let entry = unsafe { ash::Entry::load()? };
     let instance_create_info = vk::InstanceCreateInfo {
         ..Default::default()
     };
@@ -96,15 +96,15 @@ Let us first provide some ApplicationInfo:
 
 ```rust
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let entry = ash::Entry::new()?;
+    let entry = unsafe { ash::Entry::load()? };
     let enginename = std::ffi::CString::new("UnknownGameEngine").unwrap();
     let appname = std::ffi::CString::new("The Black Window").unwrap();
     let app_info = vk::ApplicationInfo {
         p_application_name: appname.as_ptr(),
         p_engine_name: enginename.as_ptr(),
-        engine_version: vk::make_version(0, 42, 0),
-        application_version: vk::make_version(0, 0, 1),
-        api_version: vk::make_version(1, 0, 106),
+        engine_version: vk::make_api_version(0,0, 42, 0),
+        application_version: vk::make_api_version(0, 0, 0, 1),
+        api_version: vk::make_api_version(0, 1, 0, 106),
         ..Default::default()
     };
     let instance_create_info = vk::InstanceCreateInfo {
@@ -127,15 +127,15 @@ Time to load the validation layers (their name: "`VK_LAYER_KHRONOS_validation`")
 
 ```rust
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let entry = ash::Entry::new()?;
+    let entry = unsafe { ash::Entry::load()? };
     let enginename = std::ffi::CString::new("UnknownGameEngine").unwrap();
     let appname = std::ffi::CString::new("The Black Window").unwrap();
     let app_info = vk::ApplicationInfo {
         p_application_name: appname.as_ptr(),
         p_engine_name: enginename.as_ptr(),
-        engine_version: vk::make_version(0, 42, 0),
-        application_version: vk::make_version(0, 0, 1),
-        api_version: vk::make_version(1, 0, 106),
+        engine_version: vk::make_api_version(0,0, 42, 0),
+        application_version: vk::make_api_version(0, 0, 0, 1),
+        api_version: vk::make_api_version(0, 1, 0, 106),
         ..Default::default()
     };
     let layer_names: Vec<std::ffi::CString> =
@@ -229,15 +229,15 @@ use ash::version::InstanceV1_0;
 use ash::vk;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let entry = ash::Entry::new()?;
+    let entry = unsafe { ash::Entry::load()? };
     let enginename = std::ffi::CString::new("UnknownGameEngine").unwrap();
     let appname = std::ffi::CString::new("The Black Window").unwrap();
     let app_info = vk::ApplicationInfo {
         p_application_name: appname.as_ptr(),
         p_engine_name: enginename.as_ptr(),
-        engine_version: vk::make_version(0, 42, 0),
-        application_version: vk::make_version(0, 0, 1),
-        api_version: vk::make_version(1, 0, 106),
+        engine_version: vk::make_api_version(0,0, 42, 0),
+        application_version: vk::make_api_version(0, 0, 0, 1),
+        api_version: vk::make_api_version(0, 1, 0, 106),
         ..Default::default()
     };
     let layer_names: Vec<std::ffi::CString> =
@@ -303,10 +303,10 @@ nicer way to do it: We can use the builders ash includes:
 ```rust
    let app_info = vk::ApplicationInfo::builder()
         .application_name(&appname)
-        .application_version(vk::make_version(0, 0, 1))
+        .application_version(vk::make_api_version(0, 0, 0, 1))
         .engine_name(&enginename)
-        .engine_version(vk::make_version(0, 42, 0))
-        .api_version(vk::make_version(1, 0, 106));
+        .engine_version(make_api_version(0,0, 42, 0))
+        .api_version(vk::make_api_version(0, 1, 0, 106));
     let layer_names: Vec<std::ffi::CString> =
         vec![std::ffi::CString::new("VK_LAYER_KHRONOS_validation").unwrap()];
     let layer_name_pointers: Vec<*const i8> = layer_names

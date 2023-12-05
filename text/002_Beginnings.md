@@ -27,7 +27,7 @@ We start a new project (`cargo new vulkanrenderer --bin`), and include ash in th
 to all things Vulkan - or: the thing that loads the dynamic library containing the volcano) and an instance: 
 ```rust
 fn main() {
-    let entry = ash::Entry::new();
+    let entry = unsafe { ash::Entry::load().unwrap() };
     let instance = unsafe { entry.create_instance(&Default::default(), None) };
 }
 ```
@@ -38,7 +38,7 @@ instance creation; we better adjust our main():
 
 ```rust
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let entry = ash::Entry::new()?;
+    let entry = unsafe { ash::Entry::load().unwrap() };
     let instance = unsafe { entry.create_instance(&Default::default(), None)? };
     Ok(())
 }
@@ -47,21 +47,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 We could, of course, also leave out the "`Ok(())`" and keep "`fn main(){`" without the fancier return type if we write "`.expect("something went wrong
 with the entry creation")`" (and some analogue for the instance) in place of "`?`".)
 
-This still does not work, because ash does not yet know which version of the Vulkan library to load. We tell it by including a use statement:
-```rust
-use ash::version::EntryV1_0;
-```
-(If we wanted to use Vulkan version 1.1, we'd need ``ash::version::EntryV1_1`` instead, etc.) 
-In the same way, we deal with the instance: "`use ash::version::InstanceV1_0`".
-
-We have another problem to take care of: Cleanup. More precisely: Cleanup on the Vulkan side. We have created an instance, now we have to destroy it. 
+We have a problem to take care of: Cleanup. More precisely: Cleanup on the Vulkan side. We have created an instance, now we have to destroy it. 
 
 ```rust
-use ash::version::EntryV1_0;
-use ash::version::InstanceV1_0;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let entry = ash::Entry::new()?;
+    let entry = unsafe { ash::Entry::load().unwrap() };
     let instance = unsafe { entry.create_instance(&Default::default(), None)? };
     unsafe { instance.destroy_instance(None) };
     Ok(())
